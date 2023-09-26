@@ -1,58 +1,73 @@
 import 'package:flutter/material.dart';
-import 'package:my_api_app/products/api_service.dart';
-import 'package:my_api_app/products/product.dart';
+import 'package:my_api_app/products/product_list_view.dart';
+import 'package:my_api_app/albums/album_list.dart';
 
 void main() {
   runApp(MyApp());
 }
 
-class MyApp extends StatelessWidget {
+class MyApp extends StatefulWidget {
+  const MyApp({super.key});
+
+  @override
+  _MyAppState createState() => _MyAppState();
+}
+
+class _MyAppState extends State<MyApp> {
+  int _currentIndex = 0;
+  final PageController _pageController = PageController();
+
+  @override
+  void dispose() {
+    _pageController.dispose();
+    super.dispose();
+  }
+
+  void _onTabTapped(int index) {
+    setState(() {
+      _currentIndex = index;
+      _pageController.animateToPage(
+        _currentIndex,
+        duration: const Duration(milliseconds: 300),
+        curve: Curves.ease,
+      );
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
       title: 'Flutter API Demo',
-      home: ProductList(),
-    );
-  }
-}
-
-class ProductList extends StatefulWidget {
-  @override
-  _ProductListState createState() => _ProductListState();
-}
-
-class _ProductListState extends State<ProductList> {
-  final ApiService apiService = ApiService();
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text('Danh sách sản phẩm'),
-      ),
-      body: FutureBuilder<List<Product>>(
-        future: apiService.fetchProducts(),
-        builder: (context, snapshot) {
-          if (snapshot.hasData) {
-            List<Product> products = snapshot.data!;
-            return ListView.builder(
-              itemCount: products.length,
-              itemBuilder: (context, index) {
-                return ListTile(
-                  title: Text(products[index].name),
-                  subtitle: Text('\$${products[index].price.toStringAsFixed(2)}'),
-                );
-              },
-            );
-          } else if (snapshot.hasError) {
-            return Center(
-              child: Text('Đã xảy ra lỗi: ${snapshot.error}'),
-            );
-          }
-          return const Center(
-            child: CircularProgressIndicator(),
-          );
-        },
+      home: Scaffold(
+        appBar: AppBar(
+          title: const Text('Flutter API Demo'),
+        ),
+        body: PageView(
+          controller: _pageController,
+          children: const [
+            ProductList(),
+            AlbumList(),
+          ],
+          onPageChanged: (index) {
+            setState(() {
+              _currentIndex = index;
+            });
+          },
+        ),
+        bottomNavigationBar: BottomNavigationBar(
+          currentIndex: _currentIndex,
+          onTap: _onTabTapped,
+          items: const [
+            BottomNavigationBarItem(
+              icon: Icon(Icons.shopping_cart),
+              label: 'Products',
+            ),
+            BottomNavigationBarItem(
+              icon: Icon(Icons.music_note),
+              label: 'Albums',
+            ),
+          ],
+        ),
       ),
     );
   }

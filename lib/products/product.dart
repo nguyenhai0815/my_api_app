@@ -13,3 +13,16 @@ class Product {
     );
   }
 }
+class NewProduct {
+  final String name;
+  final double price;
+
+  NewProduct({required this.name, required this.price});
+
+  Map<String, dynamic> toJson() {
+    return {
+      'name': name,
+      'price': price,
+    };
+  }
+}
